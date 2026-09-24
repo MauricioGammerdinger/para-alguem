@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Convite pro Date</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chewy&family=Baloo+2:wght@500;700;800&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg1:#ff5a1f; --bg2:#e0321a; --card:#4a1410; --card-edge:#6b2219;
+    --ink:#fff6ee; --muted:#f3c9b8; --btn:#ff4d24; --btn-dark:#c7300f;
+    --tile:#5c1b14; --tile-on:#ff6a3d; --heart:#2a1a24;
+  }
+  html,body{height:100%}
+  body{
+    margin:0; background:radial-gradient(120% 90% at 50% 20%, var(--bg1), var(--bg2));
+    color:var(--ink); font-family:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    overflow:hidden; padding-inline:16px; box-sizing:border-box;
+  }
+  #hearts{position:fixed; inset:0; pointer-events:none; z-index:0}
+  main{position:relative; z-index:1; height:100%; display:grid; place-items:center}
+  .screen{width:100%; max-width:380px; display:flex; flex-direction:column; align-items:center; gap:18px; animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+  .screen[hidden]{display:none!important}
+  @keyframes pop{from{transform:scale(.85) translateY(12px); opacity:.2}to{transform:none; opacity:1}}
+  .face{font-size:108px; line-height:1; filter:drop-shadow(0 10px 18px rgba(0,0,0,.25)); user-select:none}
+  .face.bob{animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+  .card{
+    width:100%; box-sizing:border-box; background:var(--card); border:1px solid var(--card-edge);
+    border-radius:22px; padding:22px 20px; box-shadow:0 18px 40px rgba(60,5,0,.45);
+    display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
+  }
+  h1{font-family:"Chewy", "Comic Sans MS", cursive; font-weight:400; font-size:27px; line-height:1.15; margin:0; letter-spacing:.5px; text-transform:uppercase; text-wrap:balance}
+  .sub{margin:-6px 0 0; color:var(--muted); font-weight:700; font-size:15px}
+  .btn{
+    font-family:"Chewy", "Comic Sans MS", cursive; font-size:20px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--ink); background:var(--btn); border:2px solid rgba(255,255,255,.35); border-radius:999px;
+    padding:10px 34px; cursor:pointer; box-shadow:0 5px 0 var(--btn-dark); transition:transform .12s, box-shadow .12s, opacity .2s;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 1px 0 var(--btn-dark)}
+  .btn:focus-visible{outline:3px solid #fff; outline-offset:3px}
+  .btn.wide{width:100%; border-radius:18px; padding:14px}
+  .btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:0 5px 0 var(--btn-dark); background:var(--tile); transform:none}
+  .row{display:flex; gap:14px; align-items:center; justify-content:center; width:100%; min-height:52px}
+  #no{background:transparent; box-shadow:none; border-color:rgba(255,255,255,.25); font-size:16px; padding:8px 22px; transition:left .25s, top .25s}
+  #no.fly{position:fixed; z-index:5; background:var(--card)}
+  .bubble{
+    position:fixed; z-index:6; background:var(--btn); color:#fff; font-family:"Chewy", cursive; font-size:18px;
+    padding:8px 18px; border-radius:999px; box-shadow:0 6px 16px rgba(0,0,0,.25); pointer-events:none;
+    text-transform:uppercase; letter-spacing:1px; white-space:nowrap; transition:opacity .3s;
+  }
+  label{align-self:stretch; text-align:left; font-weight:700; font-size:14px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+  input[type=date],input[type=time]{
+    font:inherit; font-weight:700; font-size:17px; color:var(--ink); background:#2e0b08; border:1px solid var(--card-edge);
+    border-radius:999px; padding:10px 16px; text-align:center; width:100%; box-sizing:border-box;
+  }
+  input:focus-visible{outline:2px solid var(--tile-on)}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%}
+  .tile{
+    font:inherit; color:var(--ink); background:var(--tile); border:1px solid var(--card-edge); border-radius:14px;
+    padding:10px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
+    font-size:13px; font-weight:700; transition:transform .12s, background .15s;
+  }
+  .tile span{font-size:30px; line-height:1.1}
+  .tile:hover{transform:translateY(-2px)}
+  .tile[aria-pressed=true]{background:var(--tile-on); border-color:#fff; transform:scale(1.05)}
+  .tile:focus-visible{outline:2px solid #fff}
+  .summary{list-style:none; margin:4px 0 0; padding:0; align-self:stretch; display:flex; flex-direction:column; gap:8px; text-align:left; font-weight:700; font-size:17px}
+  .summary li{display:flex; gap:10px; align-items:center}
+  .small{font-size:13px; color:var(--muted); margin:0}
+  @media (prefers-reduced-motion:reduce){ .screen,.face.bob{animation:none} #no{transition:none} }
+</style>
+</head>
+<body>
+
+<canvas id="hearts" aria-hidden="true"></canvas>
+<main>
+  <!-- 1. Pergunta -->
+  <section class="screen" id="s1">
+    <div class="face bob" id="face1">🥺</div>
+    <div class="card">
+      <h1>Você aceitaria ir a um date comigo?</h1>
+      <div class="row">
+        <button class="btn" id="yes">Sim</button>
+        <button class="btn" id="no">Não</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Disse sim -->
+  <section class="screen" id="s2" hidden>
+    <div class="face bob">😏🌹</div>
+    <div class="card">
+      <h1>Você disse sim? 😳</h1>
+      <p class="sub">Eu estava esperando você dizer não kkkk</p>
+      <button class="btn" data-next="s3">Próximo 💙</button>
+    </div>
+  </section>
+
+  <!-- 3. Data -->
+  <section class="screen" id="s3" hidden>
+    <div class="card">
+      <h1>📅 Quando você tá livre?</h1>
+      <label for="date">Escolhe a data <input type="date" id="date"></label>
+      <label for="time">Escolhe o horário <input type="time" id="time" value="19:00"></label>
+      <button class="btn wide" id="toFood" disabled>Selecionar a data 💙</button>
+    </div>
+  </section>
+
+  <!-- 4. Comida -->
+  <section class="screen" id="s4" hidden>
+    <div class="card">
+      <h1>O que tá afim? 😋</h1>
+      <div class="grid" data-group="food">
+        <button class="tile" aria-pressed="false" data-v="🍔 Hambúrguer"><span>🍔</span>Hambúrguer</button>
+        <button class="tile" aria-pressed="false" data-v="🍣 Sushi"><span>🍣</span>Sushi</button>
+        <button class="tile" aria-pressed="false" data-v="🍝 Massas"><span>🍝</span>Massas</button>
+        <button class="tile" aria-pressed="false" data-v="🌮 Tacos"><span>🌮</span>Tacos</button>
+        <button class="tile" aria-pressed="false" data-v="🍕 Pizza"><span>🍕</span>Pizza</button>
+        <button class="tile" aria-pressed="false" data-v="🍦 Açaí e sorvete"><span>🍦</span>Açaí</button>
+      </div>
+      <button class="btn wide" id="toVibe" disabled>Escolhe primeiro 👆</button>
+    </div>
+  </section>
+
+  <!-- 5. Vibe -->
+  <section class="screen" id="s5" hidden>
+    <div class="card">
+      <h1>Qual é a vibe? ☀️</h1>
+      <p class="sub">Escolhe a atividade ideal</p>
+      <div class="grid" data-group="vibe">
+        <button class="tile" aria-pressed="false" data-v="🎳 Boliche"><span>🎳</span>Boliche</button>
+        <button class="tile" aria-pressed="false" data-v="🚶 Caminhada"><span>🚶</span>Caminhada</button>
+        <button class="tile" aria-pressed="false" data-v="🎬 Cinema"><span>🎬</span>Cinema</button>
+        <button class="tile" aria-pressed="false" data-v="💃 Dança"><span>💃</span>Dança</button>
+        <button class="tile" aria-pressed="false" data-v="🍷 Restaurante"><span>🍷</span>Restaurante</button>
+        <button class="tile" aria-pressed="false" data-v="🏝️ Praia"><span>🏝️</span>Praia</button>
+      </div>
+      <button class="btn wide" id="toEnd" disabled>Escolhe primeiro 👆</button>
+    </div>
+  </section>
+
+  <!-- 6. Final -->
+  <section class="screen" id="s6" hidden>
+    <div class="face bob">🐧🌹</div>
+    <div class="card">
+      <h1>Tô contigo, gatinha 💙</h1>
+      <p class="sub">Fica pronta que eu vou te buscar 🚗</p>
+      <ul class="summary">
+        <li id="rDate"></li>
+        <li id="rTime"></li>
+        <li id="rFood"></li>
+        <li id="rVibe"></li>
+      </ul>
+      <button class="btn wide" id="copy">Copiar e me mandar 📲</button>
+      <p class="small" id="copyMsg">Tira um print ou copia e me manda no zap 😉</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const answers = { food:null, vibe:null };
+  const show = id => { document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== id); };
+
+  /* ---------- corações ---------- */
+  const cv = $('hearts'), ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H, hearts = [];
+  const resize = () => { W = cv.width = innerWidth * devicePixelRatio; H = cv.height = innerHeight * devicePixelRatio; };
+  resize(); addEventListener('resize', resize);
+  const mk = (y) => ({ x:Math.random()*W, y: y ?? H + 40, s:(10+Math.random()*18)*devicePixelRatio, v:(.25+Math.random()*.6)*devicePixelRatio, w:Math.random()*6.28, a:.55+Math.random()*.4 });
+  for (let i=0;i<26;i++) hearts.push(mk(Math.random()*H));
+  function heart(x,y,s,a){
+    ctx.save(); ctx.translate(x,y); ctx.scale(s/16,s/16); ctx.globalAlpha=a;
+    const g = ctx.createRadialGradient(-4,-4,1,0,0,16); g.addColorStop(0,'#6b5566'); g.addColorStop(1,'#1c1018');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(0,6);
+    ctx.bezierCurveTo(-14,-4,-8,-16,0,-8); ctx.bezierCurveTo(8,-16,14,-4,0,6); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(-5,-7,2.2,1.4,-.6,0,6.28); ctx.fill();
+    ctx.restore();
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    hearts.forEach((h,i)=>{ if(!reduce){ h.y-=h.v; h.w+=.02; } heart(h.x+Math.sin(h.w)*8, h.y, h.s, h.a); if(h.y < -40) hearts[i]=mk(); });
+    requestAnimationFrame(tick);
+  }
+  tick();
+  function burst(){ for(let i=0;i<30;i++){ const h=mk(H*0.6+Math.random()*H*0.4); h.v*=3; hearts.push(h);} setTimeout(()=>hearts.splice(26),6000); }
+
+  /* ---------- botão Não fujão ---------- */
+  const no = $('no'), yes = $('yes'), face = $('face1');
+  const frases = ['Tem certeza?','Pensa bem...','Sério mesmo? 😢','Vai partir meu coração','Última chance!','Não aceito não 😤','Clica no sim vai','Tá difícil né kkk'];
+  const faces = ['🥺','😢','🥹','😭','🙏','😤','🥺'];
+  let tries = 0, bubble = null;
+  function flee(e){
+    if (e) e.preventDefault();
+    const r = no.getBoundingClientRect();
+    no.classList.add('fly');
+    const pad = 20, bw = r.width, bh = r.height;
+    let x, y, guard = 0;
+    do {
+      x = pad + Math.random()*(innerWidth - bw - pad*2);
+      y = pad + Math.random()*(innerHeight - bh - pad*2);
+    } while (Math.hypot(x - r.left, y - r.top) < 120 && guard++ < 20);
+    no.style.left = x+'px'; no.style.top = y+'px';
+    tries++;
+    face.textContent = faces[tries % faces.length];
+    yes.style.transform = `scale(${Math.min(1 + tries*0.08, 1.6)})`;
+    if (!bubble){ bubble = document.createElement('div'); bubble.className='bubble'; document.body.appendChild(bubble); }
+    bubble.textContent = frases[(tries-1) % frases.length];
+    const bx = Math.min(Math.max(10, r.left - 20), innerWidth - 200);
+    bubble.style.left = bx+'px'; bubble.style.top = Math.max(10, r.top - 50)+'px';
+    bubble.style.opacity = 1;
+    clearTimeout(bubble._t); bubble._t = setTimeout(()=> bubble.style.opacity = 0, 1400);
+  }
+  no.addEventListener('mouseenter', flee);
+  no.addEventListener('touchstart', flee, {passive:false});
+  no.addEventListener('click', flee);
+
+  yes.addEventListener('click', () => { no.remove(); bubble && bubble.remove(); burst(); show('s2'); });
+  document.querySelectorAll('[data-next]').forEach(b => b.addEventListener('click', () => show(b.dataset.next)));
+
+  /* ---------- data ---------- */
+  const date = $('date'), time = $('time'), toFood = $('toFood');
+  const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  date.min = today.toISOString().slice(0,10);
+  const checkDate = () => toFood.disabled = !(date.value && time.value);
+  date.addEventListener('input', checkDate); time.addEventListener('input', checkDate);
+  toFood.addEventListener('click', () => show('s4'));
+
+  /* ---------- escolhas ---------- */
+  const nextBtn = { food:$('toVibe'), vibe:$('toEnd') };
+  document.querySelectorAll('.grid').forEach(g => {
+    const key = g.dataset.group;
+    g.addEventListener('click', e => {
+      const t = e.target.closest('.tile'); if (!t) return;
+      g.querySelectorAll('.tile').forEach(x => x.setAttribute('aria-pressed', x === t));
+      answers[key] = t.dataset.v;
+      nextBtn[key].disabled = false; nextBtn[key].textContent = 'Bora! 💙';
+    });
+  });
+  $('toVibe').addEventListener('click', () => show('s5'));
+  $('toEnd').addEventListener('click', () => {
+    const [y,m,d] = date.value.split('-').map(Number);
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    $('rDate').textContent = `📅 ${d} de ${meses[m-1]} de ${y}`;
+    $('rTime').textContent = `⏰ ${time.value}`;
+    $('rFood').textContent = `🍽️ ${answers.food}`;
+    $('rVibe').textContent = `✨ ${answers.vibe}`;
+    burst(); show('s6');
+  });
+
+  /* ---------- copiar ---------- */
+  $('copy').addEventListener('click', () => {
+    const txt = `Aceitei o date! 💙\n${$('rDate').textContent}\n${$('rTime').textContent}\n${$('rFood').textContent}\n${$('rVibe').textContent}`;
+    const ok = () => $('copyMsg').textContent = 'Copiado! Agora cola no zap 😘';
+    const fail = () => $('copyMsg').textContent = 'Não deu pra copiar aqui. Tira um print e me manda 😉';
+    try { navigator.clipboard.writeText(txt).then(ok, fail); } catch { fail(); }
+  });
+})();
+</script>
+</body>
+</html>
